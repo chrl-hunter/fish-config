@@ -1,0 +1,9 @@
+# Temporary / backup files
+*.swp
+*.swo
+*.tmp
+*.bak
+*~
+
+# OS junk
+.DS_Store
