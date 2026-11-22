@@ -9,6 +9,9 @@
 # Evita ejecutar configuración visual en scripts que invoquen Fish.
 # -----------------------------------------------------------------------------
 
+function fish_greeting
+end
+
 if status is-interactive
 
     # Fish utiliza bindings tipo Emacs por defecto.
