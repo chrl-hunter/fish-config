@@ -28,7 +28,7 @@ if test -r ~/.fish_profile
     source ~/.fish_profile
 end
 
-fish_add_path ~/.local/bin ~/.cargo/bin ~/Applications/depot_tools
+fish_add_path --global ~/.local/bin ~/.cargo/bin ~/Applications/depot_tools
 
 
 # =============================================================================
@@ -319,17 +319,17 @@ function __history_previous_command_arguments
             commandline -t ''
             commandline -f history-token-search-backward
         case '*'
-            commandline -i '
+            commandline -i '$'
     end
 end
 
 if status is-interactive
     if test "$fish_key_bindings" = fish_vi_key_bindings
         bind -M insert '!' __history_previous_command
-        bind -M insert ' __history_previous_command_arguments
+        bind -M insert '$' __history_previous_command_arguments
     else
         bind '!' __history_previous_command
-        bind ' __history_previous_command_arguments
+        bind '$' __history_previous_command_arguments
     end
 end
 
