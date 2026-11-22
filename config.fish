@@ -4,19 +4,32 @@
 # =============================================================================
 
 
-# -----------------------------------------------------------------------------
-# Modo interactivo
-# Evita ejecutar configuración visual en scripts que invoquen Fish.
-# -----------------------------------------------------------------------------
+# Ajustes de CachyOS para sesiones interactivas.
+if status is-interactive
+    if test -r /usr/share/cachyos-fish-config/conf.d/done.fish
+        set -g __done_min_cmd_duration 10000
+        set -g __done_notification_urgency_level low
+        source /usr/share/cachyos-fish-config/conf.d/done.fish
+    end
+
+    if command -q bat; and command -q col
+        set -gx MANROFFOPT -c
+        set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+    end
+end
 
 function fish_greeting
+    if command -q fastfetch
+        command fastfetch
+    end
 end
 
-if status is-interactive
-
-    # Fish utiliza bindings tipo Emacs por defecto.
-    fish_default_key_bindings
+if test -r ~/.fish_profile
+    source ~/.fish_profile
 end
+
+fish_add_path ~/.local/bin ~/.cargo/bin ~/Applications/depot_tools
+
 
 # =============================================================================
 # Prompt
@@ -249,7 +262,9 @@ function fetch
         )
     end
 
-    if type -q dpkg-query
+    if command -q pacman
+        set packages (command pacman -Qq | command wc -l | string trim)
+    else if type -q dpkg-query
         set packages (
             command dpkg-query -f '.\n' -W 2>/dev/null |
             command wc -l |
@@ -280,5 +295,101 @@ function fetch
 end
 
 
-export USER=cperez-h
-export MAIL=cperez-h@student.42barcelona.com
+# =============================================================================
+# Funciones y alias de CachyOS
+# =============================================================================
+
+function __history_previous_command
+    switch (commandline -t)
+        case '!'
+            if set -q history[1]
+                commandline -t -- $history[1]
+                commandline -f repaint
+            else
+                commandline -i '!'
+            end
+        case '*'
+            commandline -i '!'
+    end
+end
+
+function __history_previous_command_arguments
+    switch (commandline -t)
+        case '!'
+            commandline -t ''
+            commandline -f history-token-search-backward
+        case '*'
+            commandline -i '
+    end
+end
+
+if status is-interactive
+    if test "$fish_key_bindings" = fish_vi_key_bindings
+        bind -M insert '!' __history_previous_command
+        bind -M insert ' __history_previous_command_arguments
+    else
+        bind '!' __history_previous_command
+        bind ' __history_previous_command_arguments
+    end
+end
+
+function history
+    builtin history --show-time='%F %T ' $argv
+end
+
+function backup --argument-names filename
+    if test (count $argv) -ne 1
+        printf 'Uso: backup <archivo>\n' >&2
+        return 2
+    end
+
+    command cp -- "$filename" "$filename.bak"
+end
+
+function copy
+    if test (count $argv) -eq 2; and test -d "$argv[1]"
+        command cp -r -- "$argv[1]" "$argv[2]"
+    else
+        command cp $argv
+    end
+end
+
+if command -q eza
+    alias ls='eza -al --color=always --group-directories-first --icons=always'
+    alias la='eza -a --color=always --group-directories-first --icons=always'
+    alias ll='eza -l --color=always --group-directories-first --icons=always'
+    alias lt='eza -aT --color=always --group-directories-first --icons=always'
+    alias l.="eza -a | grep -e '^\.'"
+end
+
+alias .....='cd ../../../..; pwd'
+alias ......='cd ../../../../..; pwd'
+alias grubup='sudo grub-mkconfig -o /boot/grub/grub.cfg'
+alias fixpacman='sudo rm /var/lib/pacman/db.lck'
+alias tarnow='tar -acf'
+alias untar='tar -zxvf'
+alias wget='wget -c'
+alias psmem='ps auxf | sort -nr -k 4'
+alias psmem10='ps auxf | sort -nr -k 4 | head -10'
+alias dir='dir --color=auto'
+alias vdir='vdir --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='grep -F --color=auto'
+alias egrep='grep -E --color=auto'
+alias hw='hwinfo --short'
+alias big="expac -H M '%m\t%n' | sort -h | nl"
+alias gitpkg="pacman -Q | grep -ic -- '-git'"
+alias update='sudo cachyos-rate-mirrors && sudo pacman -Syu'
+alias mirror='sudo cachyos-rate-mirrors'
+alias apt='man pacman'
+alias apt-get='man pacman'
+alias tb='nc termbin.com 9999'
+alias jctl='journalctl -p 3 -xb'
+alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl"
+
+function cleanup
+    set -l orphans (command pacman -Qtdq)
+    if set -q orphans[1]
+        sudo pacman -Rns -- $orphans
+    end
+end
