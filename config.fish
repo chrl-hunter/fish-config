@@ -18,11 +18,11 @@ if status is-interactive
     end
 end
 
- #function fish_greeting
+function fish_greeting
  #    if command -q fastfetch
  #        command fastfetch
  #    end
- #end
+end
 
 if test -r ~/.fish_profile
     source ~/.fish_profile
