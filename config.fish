@@ -62,7 +62,7 @@ function fish_prompt
         printf ' %s ' (whoami)
         printf ' # '
     else
-        printf ' -> '
+        printf ' ❯ '
     end
 
     set_color normal
