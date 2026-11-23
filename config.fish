@@ -18,11 +18,11 @@ if status is-interactive
     end
 end
 
-function fish_greeting
-    if command -q fastfetch
-        command fastfetch
-    end
-end
+ #function fish_greeting
+ #    if command -q fastfetch
+ #        command fastfetch
+ #    end
+ #end
 
 if test -r ~/.fish_profile
     source ~/.fish_profile
@@ -105,8 +105,7 @@ alias forest='watch -n 5 tree -L 3 --dirsfirst -F'
 # NeoVim
 # =============================================================================
 
-alias vim='nvim'
-alias vi='nvim'
+alias nv='nvim'
 
 # =============================================================================
 # Alias de C
